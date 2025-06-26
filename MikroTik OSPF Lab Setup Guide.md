@@ -1,7 +1,7 @@
 ## MikroTik OSPF Lab Setup Guide
 
-Author: Hmoad Hajali
-Last Updated: June 25th 2025
+Authors: Yuso0001 & Hmoad Hajali 
+Last Updated: June 26th 2025
 
 ---
 
