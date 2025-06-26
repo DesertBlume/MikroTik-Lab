@@ -1,0 +1,154 @@
+!!R1 CONFIG
+hostname haja0013-R1
+enable secret class
+no ip domain-lookup
+ser password-enc
+no ip tftp source-interface
+banner motd #Auotherized Users Only!! Definitly No One Named Rich!#
+!! OSPF CONFIG GENERAL BITCH 
+router ospf 39
+router-id 39.0.0.39
+!!
+line con 0
+logging sync
+exec-time 0 0
+!!
+line vty 0 15
+logging sync
+login local 
+transport input telnet ssh
+!!
+int r g0/0/0-1
+no shutdown
+ip ospf 39 area 0
+ip ospf prio 39
+!! WAIT!!!
+int g0/0/0
+ip add 10.39.11.39 255.255.255.0
+des default gateway
+!!
+int g0/0/1
+ip add 10.39.10.39 255.255.255.0
+des Link to T1 and T2 through T1
+!!
+int g0/0/2
+ip add 203.0.113.39 255.255.255.0
+des link to remote
+!!
+exit
+username cisco privilege 15 sec cisco
+ip domain-name cnap.cst
+ip ssh v 2
+cry key gen rsa gen mod 1024
+!! WAIT HERE
+!!
+
+
+!!!! MIKROTIK - cloning 
+!!! GO INTO EDIT >> VIRTUAL NETWORK ADAPTER >> BOTTON CLICK ON CHANGE SETTINGS >>
+!! CHECK THAT VMNET0 IS BRIDGED TO REALTEK (BLACK PORT)
+!! your bridged adapter will be the one physically connected to your router through
+!! the black port we usually use for vms on the patch panel on your pod
+!! CLICK ADD NETWORK SELECT VMNET 1 make sure its host only 
+!! UNCHECK USE LOCAL DHCP SERVICE TO DISTRIBUTE IP ADDRESS TO VMS 
+!! this will be your virtual link to your virtual router T2.
+!! copy the vmx file provided and replace the existing vmx file located in 
+!! C:\Users\Student\Documents\Virtual Machines\chr-7.19.1.vmdk
+!! its called MikroTIK7.19.1 and under type it will be VMware virtual machine configuration (might have to expand type)
+!! once you pasted the vmx config provided in the lab onto the vmx config in the directions
+!! start up the machine to make sure it runs 
+!! LOGIN NAME IS : admin
+!! PASSWORD IS : admin
+!! YOU ARE NOW IN THE CONFIGURATION PLACE congradulations!
+
+!!CLONE THE MikroTik CHR router 
+!! MAKE SURE ITS NOT A LINKED CLONE! 
+!! NAME THE CLONE T1
+!!CLONE THE MikroTik CHR router AGAIN!!!
+!! MAKE SURE ITS NOT A LINKED CLONE! 
+!! NAME THE CLONE T2
+
+!! ON T1 add two adapters 
+!! custom both. first vmnet0 your bridged adapter 
+!! second vmnet1 your host only adapter
+!! TYPE interface print. that'll list all the your adapter's interfaces. 
+!! you should see three. one for vmnet0, vmnet1 and a loopback one.
+!! the first two should be named ether#
+!! figure out which one is your vmnet0 and which is vmnet 1
+!! rename the interfaces to match the topology 
+!! interface set [the original interface name] name=[name on topology]
+!! set ip addresses 
+!! ip address add address=x.x.x.x/24 interface=[name of the interface] 
+!! if you make a mistake and would like to remove an ip add
+!! first type interface print 
+[admin@MikroTik] > interface/print
+Flags: R - RUNNING
+Columns: NAME, TYPE, ACTUAL-MTU, L2MTU, MAC-ADDRESS
+#   NAME  TYPE      ACTUAL-MTU  L2MTU  MAC-ADDRESS
+0 R eth2  ether           1500         00:0C:29:68:5B:EE
+1 R lo    loopback       65536         00:00:00:00:00:00
+2 R loop  bridge          1500  65535  DE:88:56:E9:1C:FF
+!! see the '#' thats the number of the interface keep that in mind 
+to remove an ip address use 
+ip address remove numbers=[put the value under # of the ip address you want to remove]
+
+
+on T2 
+add only ONE ADAPTER MAKE SURE ITS VMNET1 THE HOST ONLY NETWORK!
+follow the steps for T1 but with T2's addressing 
+to make a loopback interface
+interface bridge add name=[name of your loopback]
+ip address add address=10.U.22.2/24 interface=[the name of the one you just created]
+
+type / and click enter
+try to ping from T1 to T2 if you figured out with interface on T1 was host only and which was bridged 
+and applied the correct ip addresses you should be able to ping through 
+if that succeeds 
+on T1 ping the RA on the directly connected link
+if that works! bravo you are solid 
+
+if that does not work 
+DO NO PROCEED UNTIL IT DOES PLEASE FOR THE LOVE OF GOD DONT DO FURTHER i love you 
+
+to enable ospf 
+on T1
+type / and then click enter 
+routing ospf instance add name=ospf1 (this is the same as a process number in cisco) router-id=U.0.0.1
+routing ospf area add name=backbone (an easy way to refer to the area) area=0.0.0.0 (this is area 0 i know different from cisco) instance=(can you guess what you will be putting here?)ospf1
+
+routing ospf interface-template add interface=[choose the name of the interface you want ospf enabled] 
+networks=[the network id of that interface 10.U.10.0/24] area=[name of the area backbone] 
+
+you'll have to do the interface-template command again but for the other interface and it's network 
+routing ospf interface-template add interface=[choose the name of the interface you want ospf enabled] 
+networks=[the network id of that interface 10.U.12.0/24] area=[name of the area backbone] 
+thats the only command you have to do per interface per network 
+
+assuming you have already configured ospf on your cisco router
+and you were able to ping 
+and you didn't use matching router-ids 
+an ospf neigh relationship should form and you should be able to view it with 
+sh ip ospf neigh on cisco and 
+[admin@MikroTik] > routing ospf neigh prin
+Flags: V - virtual; D - dynamic
+ 0  D instance=ospf1 area=backbone address=10.39.10.39 priority=39
+      router-id=39.0.0.39 dr=10.39.10.39 bdr=10.39.10.1 state="Full"
+      state-changes=6 adjacency=57m37s timeout=39s
+
+ 1  D instance=ospf1 area=backbone address=10.39.12.2 priority=128
+      router-id=39.0.0.2 dr=10.39.12.1 bdr=10.39.12.2 state="Full" state-changes=6
+      adjacency=52m23s timeout=37s
+[admin@MikroTik] >
+on MikroTik
+
+
+DO NOT PROCEED IF THIS HAS NOT FORMED!
+now use that to do the same for T2 
+
+
+
+
+
+
+
+
