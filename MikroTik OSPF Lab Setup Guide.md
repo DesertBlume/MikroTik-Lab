@@ -1,7 +1,7 @@
 ## MikroTik OSPF Lab Setup Guide
 
 Authors: Yuso0001 & Hmoad Hajali 
-Last Updated: June 26th 2025
+Last Updated: June 30th 2025
 
 ---
 
@@ -92,15 +92,9 @@ crypto key generate rsa modulus 1024
    * Click **Change Settings**
    * Add **VMnet1** and **Uncheck DHCP Server**
 
-### Replace VMX File
+### Start the MikroTIK 7.19.1 VM in VMware
 
-Copy the provided `.vmx` file to:
-
-```
-C:\Users\Student\Documents\Virtual Machines\chr-7.19.1.vmdk
-```
-
-Replace the original MikroTik VM’s config file. Start the VM and confirm it boots.
+Make sure the vm boots up.
 
 * **Username**: `admin`
 * **Password**: `admin`
